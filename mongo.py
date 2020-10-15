@@ -10,8 +10,14 @@ client = pymongo.MongoClient(
 
 @app.route('/signup', methods=['POST'])
 def create_user():
-    client.logger.users.insert_one(request.get_json())
-    return "INSERTED"
+    resp = request.get_json()
+    print(resp)
+    print(client.logger.users.find_one({"email" : resp['email']}))
+    if (client.logger.users.find_one({"email" : resp['email']}) == None):
+        client.logger.users.insert_one(resp)
+        return jsonify(status = 'INSERTED')
+    else:
+        return jsonify(status = 'error', message = 'Account with that email exists')
 
 
 if __name__ == '__main__':
