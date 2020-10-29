@@ -20,5 +20,18 @@ def create_user():
         return jsonify(status = 'error', message = 'Account with that email exists')
 
 
+@app.route('/login', methods=['POST'])
+def user_login():
+    resp = request.get_json()
+    print(resp)
+    user = client.logger.users.find_one({"email" : resp['email']})
+    if (user != None):
+        if (resp['password'] == user['password']):
+            return jsonify(status = 'Login Successful')
+        else:
+            return jsonify(status = 'error', message = 'Username and Password don\'t match')
+    else:
+        return jsonify(status = 'error', message = 'Username and Password don\'t match')
+
 if __name__ == '__main__':
     app.run(host="localhost", port=8080, debug=True)
