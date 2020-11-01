@@ -33,7 +33,7 @@ def user_login():
         else:
             return jsonify(status = 'error', message = 'Username and Password don\'t match')
     else:
-        return jsonify(status = 'error', message = 'Username and Password don\'t match')
+        return jsonify(status = 'error', message = 'User does not exist')
 
 if __name__ == '__main__':
     app.run(host="localhost", port=8080, debug=True)
