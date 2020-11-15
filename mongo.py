@@ -18,8 +18,7 @@ def create_user():
         client.logger.users.insert_one(resp)
         if (resp['admin']):
             admin = client.logger.users.find_one({"email": resp['email']})
-            client.logger.teams.insert_one(
-                {'admin': admin['_id'], 'users': []})
+            client.logger.teams.insert_one({'admin': admin['_id'], 'users': [admin['_id']]})
         return jsonify(status='INSERTED')
     else:
         return jsonify(status='error', message='Account with that email exists')
