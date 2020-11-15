@@ -48,6 +48,26 @@ def remove_user_from_team():
     client.logger.teams.update({"admin": admin['_id']}, {'$pull': {'users': user['_id']}})
     return jsonify(status='REMOVED')
 
+@app.route('/findteam', methods=['POST'])
+def find_team():
+    resp = request.get_json()
+    user = client.logger.users.find_one({"email": resp['userEmail']})
+    team = client.logger.teams.find_one({"users": user['_id']})
+    users = []
+    for i in team['users']:
+        users.append(client.logger.users.find_one({"_id": i}, {'_id':0}))
+    if (team == None):
+        return jsonify(status='error', message='User not on a team.')
+    return jsonify(status='TEAM FOUND', team = users)
+
+# @app.route('/search', methods=['POST'])
+# def search_email():
+#     resp = request.get_json()
+#     matched = client.logger.users.find({"email" : "/{}/i".format(resp['userEmail'])}, {'_id':0})
+#     if(matched != None):
+#         return jsonify(status='USER FOUND', user = matched)
+#     else:
+#        return jsonify(status='error', message='User does not exist.')
 
 @app.route('/login', methods=['POST'])
 def user_login():
