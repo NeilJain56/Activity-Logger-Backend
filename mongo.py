@@ -6,7 +6,6 @@ from flask_pymongo import pymongo
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
 client = pymongo.MongoClient(
     "mongodb+srv://neil:different@activitylogger.sveyt.mongodb.net/logger?retryWrites=true&w=majority")
 
@@ -64,7 +63,11 @@ def user_login():
     user = client.logger.users.find_one({"email": resp['email']})
     if (user != None):
         if (resp['password'] == user['password']):
-            return jsonify(status='Login Successful', user=user)
+            print(user)
+            return jsonify(status='Login Successful', user={
+                "email": user["email"],
+                "isAdmin": user["admin"]
+            })
         else:
             return jsonify(status='error', message='Username and Password don\'t match')
     else:
@@ -72,4 +75,4 @@ def user_login():
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=8080, debug=True)
+    app.run(host="localhost", port=5050, debug=True)
