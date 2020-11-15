@@ -65,14 +65,17 @@ def find_team():
         return jsonify(status='error', message='User not on a team.')
     return jsonify(status='TEAM FOUND', team = users)
 
-# @app.route('/search', methods=['POST'])
-# def search_email():
-#     resp = request.get_json()
-#     matched = client.logger.users.find({"email" : "/{}/i".format(resp['userEmail'])}, {'_id':0})
-#     if(matched != None):
-#         return jsonify(status='USER FOUND', user = matched)
-#     else:
-#        return jsonify(status='error', message='User does not exist.')
+@app.route('/search', methods=['POST'])
+def search_email():
+    resp = request.get_json()
+    matched = client.logger.users.find({"email" : {'$regex': resp['userEmail'], '$options': '$i'}}, {'_id':0})
+    x = []
+    for i in matched:
+        x.append(i)
+    if(len(x) != 0):
+        return jsonify(status='USER FOUND', users = x)
+    else:
+       return jsonify(status='error', message='User does not exist.')
 
 @app.route('/login', methods=['POST'])
 @cross_origin()
