@@ -95,6 +95,25 @@ def user_login():
     else:
         return jsonify(status='error', message='User does not exist')
 
+@app.route('/getLogs', methods=['POST'])
+@cross_origin()
+def get_all_logs():
+    resp = request.get_json()
+    logs = client.logger.logs.find({'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", -1).skip(int(resp['pageNumber'])*10)
+    logsView = []
+    for x in logs:
+        logsView.append(x)
+    return jsonify(status='SUCCESSFUL', logs = logsView)
+
+# @app.route('/getLogsByText', methods=['POST'])
+# @cross_origin()
+# def get_logs_by_text():
+#     resp = request.get_json()
+#     logs = client.logger.logs.find({'application': resp['name']}, {"log" : {'$regex': resp['text'], '$options': '$i'},{'_id':0}, limit = 10).sort("timestamp", -1).skip(int(resp['pageNumber'])*10)
+#     logsView = []
+#     for x in logs:
+#         logsView.append(x)
+#     return jsonify(status='SUCCESSFUL', logs = logsView)
 
 if __name__ == '__main__':
     app.run(host="localhost", port=5050, debug=True)
