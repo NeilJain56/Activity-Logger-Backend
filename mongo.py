@@ -100,7 +100,7 @@ def user_login():
 @cross_origin()
 def get_all_logs():
     resp = request.get_json()
-    logs = client.logger.logs.find({'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", -1).skip(int(resp['pageNumber'])*10)
+    logs = client.logger.logs.find({'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
         logsView.append(x)
@@ -109,8 +109,9 @@ def get_all_logs():
 # @app.route('/getLogsByText', methods=['POST'])
 # @cross_origin()
 # def get_logs_by_text():
+#     #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
 #     resp = request.get_json()
-#     logs = client.logger.logs.find({'application': resp['name']}, {"log" : {'$regex': resp['text'], '$options': '$i'},{'_id':0}, limit = 10).sort("timestamp", -1).skip(int(resp['pageNumber'])*10)
+#     logs = client.logger.logs.find({'application': resp['name'], {"log" : {'$regex': resp['text'], '$options': '$i'}}}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
 #     logsView = []
 #     for x in logs:
 #         logsView.append(x)
