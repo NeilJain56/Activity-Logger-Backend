@@ -11,21 +11,20 @@ client = pymongo.MongoClient(
 
 
 @app.route('/signup', methods=['POST'])
-@cross_origin()
 def create_user():
     resp = request.get_json()
     if (client.logger.users.find_one({"email": resp['email']}) == None):
         client.logger.users.insert_one(resp)
         if (resp['admin']):
             admin = client.logger.users.find_one({"email": resp['email']})
-            client.logger.teams.insert_one({'admin': admin['_id'], 'users': [admin['_id']]})
+            client.logger.teams.insert_one(
+                {'admin': admin['_id'], 'users': [admin['_id']]})
         return jsonify(status='INSERTED')
     else:
         return jsonify(status='error', message='Account with that email exists')
 
 
 @app.route('/adduser', methods=['POST'])
-@cross_origin()
 def add_user_to_team():
     resp = request.get_json()
     admin = client.logger.users.find_one({"email": resp['adminEmail']})
@@ -44,7 +43,6 @@ def add_user_to_team():
 
 
 @app.route('/removeuser', methods=['POST'])
-@cross_origin()
 def remove_user_from_team():
     resp = request.get_json()
     admin = client.logger.users.find_one({"email": resp['adminEmail']})
@@ -53,6 +51,7 @@ def remove_user_from_team():
                                '$pull': {'users': user['_id']}})
     return jsonify(status='REMOVED')
 
+
 @app.route('/findteam', methods=['POST'])
 def find_team():
     resp = request.get_json()
@@ -60,25 +59,27 @@ def find_team():
     team = client.logger.teams.find_one({"users": user['_id']})
     users = []
     for i in team['users']:
-        users.append(client.logger.users.find_one({"_id": i}, {'_id':0}))
+        users.append(client.logger.users.find_one({"_id": i}, {'_id': 0}))
     if (team == None):
         return jsonify(status='error', message='User not on a team.')
-    return jsonify(status='TEAM FOUND', team = users)
+    return jsonify(status='TEAM FOUND', team=users)
+
 
 @app.route('/search', methods=['POST'])
 def search_email():
     resp = request.get_json()
-    matched = client.logger.users.find({"email" : {'$regex': resp['userEmail'], '$options': '$i'}}, {'_id':0})
+    matched = client.logger.users.find(
+        {"email": {'$regex': resp['userEmail'], '$options': '$i'}}, {'_id': 0})
     x = []
     for i in matched:
         x.append(i)
     if(len(x) != 0):
-        return jsonify(status='USER FOUND', users = x)
+        return jsonify(status='USER FOUND', users=x)
     else:
-       return jsonify(status='error', message='User does not exist.')
+        return jsonify(status='error', message='User does not exist.')
+
 
 @app.route('/login', methods=['POST'])
-@cross_origin()
 def user_login():
     resp = request.get_json()
     print(resp)
