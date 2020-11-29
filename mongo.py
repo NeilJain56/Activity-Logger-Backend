@@ -3,6 +3,7 @@ from flask_cors import CORS, cross_origin
 from flask import jsonify
 from flask import request
 from flask_pymongo import pymongo
+import re
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -112,6 +113,17 @@ def get_logs_by_text():
     #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
     resp = request.get_json()
     logs = client.logger.logs.find({"log" : {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+    logsView = []
+    for x in logs:
+        logsView.append(x)
+    return jsonify(status='SUCCESSFUL', logs = logsView)
+
+@app.route('/getLogsByRegex', methods=['POST'])
+@cross_origin()
+def get_logs_by_regex():
+    #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
+    resp = request.get_json()
+    logs = client.logger.logs.find({"log" : {'$regex': re.compile(resp['text'])}, 'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
         logsView.append(x)
