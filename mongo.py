@@ -103,20 +103,21 @@ def user_login():
 @cross_origin()
 def get_all_logs():
     resp = request.get_json()
-    logs = client.logger.logs.find({'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+    logs = client.logger.logs.find({'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
+        x['_id'] = str(x['_id'])
         logsView.append(x)
     return jsonify(status='SUCCESSFUL', logs = logsView)
 
 @app.route('/getLogsByText', methods=['POST'])
 @cross_origin()
 def get_logs_by_text():
-    #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
     resp = request.get_json()
-    logs = client.logger.logs.find({"log" : {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+    logs = client.logger.logs.find({"log" : {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
+        x['_id'] = str(x['_id'])
         logsView.append(x)
     return jsonify(status='SUCCESSFUL', logs = logsView)
 
@@ -125,9 +126,10 @@ def get_logs_by_text():
 def get_logs_by_regex():
     #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
     resp = request.get_json()
-    logs = client.logger.logs.find({"log" : {'$regex': re.compile(resp['text'])}, 'application': resp['name']}, {'_id':0}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+    logs = client.logger.logs.find({"log" : {'$regex': re.compile(resp['text'])}, 'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
+        x['_id'] = str(x['_id'])
         logsView.append(x)
     return jsonify(status='SUCCESSFUL', logs = logsView)
 
