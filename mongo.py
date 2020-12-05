@@ -134,7 +134,6 @@ def get_logs_by_regex():
         logsView.append(x)
     return jsonify(status='SUCCESSFUL', logs = logsView)
 
-<<<<<<< HEAD
 @app.route('/pinLogs', methods=['POST'])
 @cross_origin()
 def pinLogs():
@@ -157,7 +156,7 @@ def removePinLogs():
     print(log)
     client.logger.teams.update({"_id": team['_id']}, {'$pull': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
-=======
+    
 @app.route('/exportLogs', methods=['POST'])
 @cross_origin()
 def export_logs():
@@ -171,7 +170,6 @@ def export_logs():
     return send_file("logs.csv", as_attachment=True)
 
 
->>>>>>> 5d53a5a090e112b441f390b4800bd9b730ce05d4
 
 if __name__ == '__main__':
     app.run(host="localhost", port=5000, debug=True)
