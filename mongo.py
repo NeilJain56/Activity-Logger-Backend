@@ -2,8 +2,10 @@ from flask import Flask
 from flask_cors import CORS, cross_origin
 from flask import jsonify
 from flask import request
+from flask import send_file
 from flask_pymongo import pymongo
 import re
+import os
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -128,6 +130,20 @@ def get_logs_by_regex():
     for x in logs:
         logsView.append(x)
     return jsonify(status='SUCCESSFUL', logs = logsView)
+
+@app.route('/exportLogs', methods=['POST'])
+@cross_origin()
+def export_logs():
+    resp = request.get_json()
+    logs = client.logger.logs.find({"log": {'$regex': re.compile(resp['text'])}, 'application': resp['name']}).sort("timestamp", 1)
+    file = open("logs.csv", 'w')
+    for log in logs:
+        file.write(str(log["timestamp"]) + "," + log["level"] + "," + log["log"] + "\n")
+    file.close()
+
+    return send_file("logs.csv", as_attachment=True)
+
+
 
 if __name__ == '__main__':
     app.run(host="localhost", port=5050, debug=True)
