@@ -142,7 +142,6 @@ def pinLogs():
     team = client.logger.teams.find_one({"users": user['_id']})
     client.logger.teams.update({'_id' : team['_id'], 'pinnedLogs': {'$exists' : False}}, {'$set' : {'pinnedLogs' : {'frontend-website' : [], 'java-backend': [], 'mongo-db': []}}})
     log = client.logger.logs.find_one({'_id': ObjectId(resp['logID'])})
-    print(log)
     client.logger.teams.update({"_id": team['_id']}, {'$push': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
 
@@ -153,7 +152,6 @@ def removePinLogs():
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
     log = client.logger.logs.find_one({'_id': ObjectId(resp['logID'])})
-    print(log)
     client.logger.teams.update({"_id": team['_id']}, {'$pull': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
 
