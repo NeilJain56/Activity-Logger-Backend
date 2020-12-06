@@ -155,6 +155,20 @@ def removePinLogs():
     client.logger.teams.update({"_id": team['_id']}, {'$pull': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
 
+@app.route('/getPinnedLogs', methods=['POST'])
+@cross_origin()
+def get_pinned_logs():
+    resp = request.get_json()
+    user = client.logger.users.find_one({"email": resp['userEmail']})
+    team = client.logger.teams.find_one({"users": user['_id']})
+    logs = client.logger.logs.find({"_id": {"$in": team["pinnedLogs"][resp["application"]]}})
+    logsView = []
+    for x in logs:
+        x['_id'] = str(x['_id'])
+        logsView.append(x)
+    return jsonify(status='SUCCESSFUL', logs=logsView)
+
+
 @app.route('/exportLogs', methods=['POST'])
 @cross_origin()
 def export_logs():
