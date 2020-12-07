@@ -100,39 +100,76 @@ def user_login():
     else:
         return jsonify(status='error', message='User does not exist')
 
+
 @app.route('/getLogs', methods=['POST'])
 @cross_origin()
 def get_all_logs():
     resp = request.get_json()
-    logs = client.logger.logs.find({'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+    user = client.logger.users.find_one({"email": resp['userEmail']})
+    team = client.logger.teams.find_one({"users": user['_id']})
+    pinned_logs = client.logger.logs.find(
+        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+    id_set = set()
+    for p in pinned_logs:
+        id_set.add(str(p['_id']))
+
+    logs = client.logger.logs.find({'application': resp['name']}, limit=10).sort(
+        "timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
         x['_id'] = str(x['_id'])
+        x['pinned'] = x['_id'] in id_set
         logsView.append(x)
-    return jsonify(status='SUCCESSFUL', logs = logsView)
+    return jsonify(status='SUCCESSFUL', logs=logsView)
+
 
 @app.route('/getLogsByText', methods=['POST'])
 @cross_origin()
 def get_logs_by_text():
     resp = request.get_json()
-    logs = client.logger.logs.find({"log" : {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+
+    user = client.logger.users.find_one({"email": resp['userEmail']})
+    team = client.logger.teams.find_one({"users": user['_id']})
+    pinned_logs = client.logger.logs.find(
+        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+    id_set = set()
+    for p in pinned_logs:
+        id_set.add(str(p['_id']))
+
+    logs = client.logger.logs.find({"log": {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, limit=10).sort(
+        "timestamp", 1).skip(int(resp['pageNumber'])*10)
     logsView = []
     for x in logs:
         x['_id'] = str(x['_id'])
+        x['pinned'] = x['_id'] in id_set
         logsView.append(x)
-    return jsonify(status='SUCCESSFUL', logs = logsView)
+    return jsonify(status='SUCCESSFUL', logs=logsView)
+
 
 @app.route('/getLogsByRegex', methods=['POST'])
 @cross_origin()
 def get_logs_by_regex():
     #{"log" : {'$regex': resp['text'], '$options': '$i'}},{'_id':0},
     resp = request.get_json()
-    logs = client.logger.logs.find({"log" : {'$regex': re.compile(resp['text'])}, 'application': resp['name']}, limit = 10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+
+    user = client.logger.users.find_one({"email": resp['userEmail']})
+    team = client.logger.teams.find_one({"users": user['_id']})
+    pinned_logs = client.logger.logs.find(
+        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+    id_set = set()
+    for p in pinned_logs:
+        id_set.add(str(p['_id']))
+
+    logs = client.logger.logs.find({"log": {'$regex': re.compile(
+        resp['text'])}, 'application': resp['name']}, limit=10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
+
     logsView = []
     for x in logs:
         x['_id'] = str(x['_id'])
+        x['pinned'] = x['_id'] in id_set
         logsView.append(x)
-    return jsonify(status='SUCCESSFUL', logs = logsView)
+    return jsonify(status='SUCCESSFUL', logs=logsView)
+
 
 @app.route('/pinLogs', methods=['POST'])
 @cross_origin()
@@ -140,10 +177,13 @@ def pinLogs():
     resp = request.get_json()
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
-    client.logger.teams.update({'_id' : team['_id'], 'pinnedLogs': {'$exists' : False}}, {'$set' : {'pinnedLogs' : {'frontend-website' : [], 'java-backend': [], 'mongo-db': []}}})
+    client.logger.teams.update({'_id': team['_id'], 'pinnedLogs': {'$exists': False}}, {
+                               '$set': {'pinnedLogs': {'frontend-website': [], 'java-backend': [], 'mongo-db': []}}})
     log = client.logger.logs.find_one({'_id': ObjectId(resp['logID'])})
-    client.logger.teams.update({"_id": team['_id']}, {'$push': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
+    client.logger.teams.update({"_id": team['_id']}, {
+                               '$push': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
+
 
 @app.route('/removePinLogs', methods=['POST'])
 @cross_origin()
@@ -152,8 +192,10 @@ def removePinLogs():
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
     log = client.logger.logs.find_one({'_id': ObjectId(resp['logID'])})
-    client.logger.teams.update({"_id": team['_id']}, {'$pull': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
+    client.logger.teams.update({"_id": team['_id']}, {
+                               '$pull': {'pinnedLogs.{}'.format(log['application']): ObjectId(log['_id'])}})
     return jsonify(status='SUCCESSFUL')
+
 
 @app.route('/getPinnedLogs', methods=['POST'])
 @cross_origin()
@@ -161,7 +203,8 @@ def get_pinned_logs():
     resp = request.get_json()
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
-    logs = client.logger.logs.find({"_id": {"$in": team["pinnedLogs"][resp["application"]]}})
+    logs = client.logger.logs.find(
+        {"_id": {"$in": team["pinnedLogs"][resp["application"]]}})
     logsView = []
     for x in logs:
         x['_id'] = str(x['_id'])
@@ -173,14 +216,15 @@ def get_pinned_logs():
 @cross_origin()
 def export_logs():
     resp = request.get_json()
-    logs = client.logger.logs.find({"log": {'$regex': re.compile(resp['text'])}, 'application': resp['name']}).sort("timestamp", 1)
+    logs = client.logger.logs.find({"log": {'$regex': re.compile(
+        resp['text'])}, 'application': resp['name']}).sort("timestamp", 1)
     file = open("logs.csv", 'w')
     for log in logs:
-        file.write(str(log["timestamp"]) + "," + log["level"] + "," + log["log"] + "\n")
+        file.write(str(log["timestamp"]) + "," +
+                   log["level"] + "," + log["log"] + "\n")
     file.close()
 
     return send_file("logs.csv", as_attachment=True)
-
 
 
 if __name__ == '__main__':
