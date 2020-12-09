@@ -209,6 +209,7 @@ def get_pinned_logs():
     for x in logs:
         x['_id'] = str(x['_id'])
         logsView.append(x)
+    print(logsView)
     return jsonify(status='SUCCESSFUL', logs=logsView)
 
 
