@@ -107,11 +107,12 @@ def get_all_logs():
     resp = request.get_json()
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
-    pinned_logs = client.logger.logs.find(
-        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
     id_set = set()
-    for p in pinned_logs:
-        id_set.add(str(p['_id']))
+    if(team.get("pinnedLogs") != None):
+        pinned_logs = client.logger.logs.find(
+            {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+        for p in pinned_logs:
+            id_set.add(str(p['_id']))
 
     logs = client.logger.logs.find({'application': resp['name']}, limit=10).sort(
         "timestamp", 1).skip(int(resp['pageNumber'])*10)
@@ -130,11 +131,12 @@ def get_logs_by_text():
 
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
-    pinned_logs = client.logger.logs.find(
-        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
     id_set = set()
-    for p in pinned_logs:
-        id_set.add(str(p['_id']))
+    if(team.get("pinnedLogs") != None):
+        pinned_logs = client.logger.logs.find(
+            {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+        for p in pinned_logs:
+            id_set.add(str(p['_id']))
 
     logs = client.logger.logs.find({"log": {'$regex': resp['text'], '$options': '$i'}, 'application': resp['name']}, limit=10).sort(
         "timestamp", 1).skip(int(resp['pageNumber'])*10)
@@ -154,11 +156,12 @@ def get_logs_by_regex():
 
     user = client.logger.users.find_one({"email": resp['userEmail']})
     team = client.logger.teams.find_one({"users": user['_id']})
-    pinned_logs = client.logger.logs.find(
-        {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
     id_set = set()
-    for p in pinned_logs:
-        id_set.add(str(p['_id']))
+    if(team.get("pinnedLogs") != None):
+        pinned_logs = client.logger.logs.find(
+            {"_id": {"$in": team["pinnedLogs"][resp["name"]]}})
+        for p in pinned_logs:
+            id_set.add(str(p['_id']))
 
     logs = client.logger.logs.find({"log": {'$regex': re.compile(
         resp['text'])}, 'application': resp['name']}, limit=10).sort("timestamp", 1).skip(int(resp['pageNumber'])*10)
